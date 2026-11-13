@@ -330,3 +330,97 @@ and NameSilo suspended `funrat.top` once already, so the domain route works too.
 campaign to come back on a new domain and a new Worker within days, because the address list lives
 on-chain. That is worth saying in any report you file, because it explains why you may see the
 infrastructure change right after a takedown.
+
+
+---
+
+## 8. Discord, second report: the OAuth application behind the panel
+
+**To:** https://dis.gd/report (Trust & Safety)
+**Subject:** Discord OAuth application 1514260224175767732 is the customer login for a malware panel
+
+Hello,
+
+Following up on my earlier report about the FunRAT campaign. I have found that the panel used to
+run that campaign authenticates its customers with a registered Discord OAuth application, and I
+would like to report that application.
+
+The panel at `https://funrat.mom/auth/login/` offers "Continue with Discord". Requesting
+`https://funrat.mom/oauth2/authorization/discord` returns a redirect to:
+
+```
+https://discord.com/oauth2/authorize?response_type=code
+  &client_id=1514260224175767732
+  &scope=identify email
+  &redirect_uri=https://funrat.mom/login/oauth2/code/discord
+```
+
+So the Discord application with ID `1514260224175767732` is the login mechanism for paying and
+free customers of a malware-as-a-service product. The product's own public feature page describes
+what it does to victims: stealing Minecraft and Microsoft session tokens, Discord tokens, Telegram
+login details, browser passwords and cookies, crypto wallet files, and giving the customer remote
+console access, file access and screen control over the victim's machine.
+
+There is a second connection to Discord as well. The panel's backend, which I recovered from a
+payload the campaign distributes, forwards every stolen account to a **Discord webhook** chosen by
+the customer. The relevant code resolves a webhook URL from the customer's settings and posts an
+embed:
+
+```java
+List<String> candidates = this.resolveWebhooks(key);
+// only https://discord.com/api/webhooks/ or discordapp.com URLs are accepted
+int c = this.sendEmbed(w, name, uuid, token, receiver, key);
+```
+
+So stolen Microsoft account tokens are being delivered into Discord channels via webhooks, per
+customer.
+
+What I am asking for:
+
+1. Review and disable the application `1514260224175767732` and the redirect URI
+   `https://funrat.mom/login/oauth2/code/discord`.
+2. If possible, identify the webhooks that receive these embeds. The payload identifies each
+   submission with a customer key, and the sample I analysed uses
+   `5af99dfc-41c6-451e-b4cd-22c99b9a4e9c`. The operator's own tenant appears to be
+   `30e3267e-d80c-4a8f-84e2-bb475930a37c`.
+3. The guild `1443109598579003414` from my first report is used by the malware as a check to avoid
+   spamming the author's own members.
+
+Analysis, indicators and the deobfuscated code: https://github.com/Broshan1337/funrat-analysis
+
+Thank you,
+
+---
+
+## 9. Google: the OAuth client behind the panel
+
+**To:** https://support.google.com/accounts/contact/ (choose "Report abuse") or the Google Cloud
+abuse form at https://console.cloud.google.com/abuse or abuse@google.com
+**Subject:** Google OAuth client 827852235446-sbf6m20mr632rp3f6huhhrlcgda9iq0k is the login for a malware panel
+
+Hello,
+
+The control panel for a malware-as-a-service operation uses a Google OAuth client for customer
+sign-in. Requesting `https://funrat.mom/oauth2/authorization/google` on the operator's own site
+redirects to:
+
+```
+https://accounts.google.com/o/oauth2/v2/auth
+  client_id=827852235446-sbf6m20mr632rp3f6huhhrlcgda9iq0k.apps.googleusercontent.com
+  scope=openid profile email
+  redirect_uri=https://funrat.mom/login/oauth2/code/google
+```
+
+Project number: `827852235446`.
+
+The site is the panel for "FunRAT", which its own public feature page describes as a tool that
+steals Minecraft and Microsoft session tokens, Discord and Telegram credentials, browser passwords
+and cookies, and crypto wallet files from victims, and gives the customer remote console, file and
+screen control over the victim's machine. It is distributed to minors as a free Minecraft cheat
+mod.
+
+Requested action: disable the OAuth client and review the Cloud project for the registration
+details, and treat this as part of an active malware operation. I have the full technical analysis
+public at https://github.com/Broshan1337/funrat-analysis and can provide samples on request.
+
+Thank you,

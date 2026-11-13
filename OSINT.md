@@ -231,6 +231,72 @@ telemetry-relay.kartohaantoha36-6a9.workers.dev   dead, Cloudflare 403/530
 `relay-mirror` is a straight mirror of the same slot map, so killing `relay-3f9c71` alone would
 not stop delivery.
 
+## The public site
+
+Three pages are public, no login needed: `/`, `/features/` and `/auth/login/`.
+
+`/features/` is a product specification for **"FunRAT v2"**, written by the operator, listing
+exactly what a customer receives per victim:
+
+```
+Minecraft session tokens, IP addresses, screenshot, Discord token + Telegram login details,
+crypto wallets (hardware + web), multiple launcher grabber (Lunar, Feather, Essential, IAS,
+Prism, MultiMC, Modrinth), game and mod platform data (Minecraft, CurseForge), passwords,
+cookie access (all browsers), autofill data, "Run as .EXE capability",
+"Integration hooks (Discord notifications) - opt-in",
+victim's file access, remote console access, screen capture + screen control
+```
+
+Two things in that list are new to the analysis. "Integration hooks (Discord notifications),
+opt-in" is the per-tenant webhook delivery described above, sold as a feature. And "screen capture
++ **screen control**" matches the `/control/*` routes in the backend.
+
+The same page then contains a compliance section, which is worth quoting in full because it is the
+operator describing what they know they are doing:
+
+> Compliance & Safeguards. All data handling follows explicit consent workflows. Detailed audit
+> logs and webhook protection. Role-based access and encrypted storage for collected artifacts.
+> ... Privacy & Security. Full anonymity and webhook protection. All actions are performed only
+> after clear user authorization.
+
+There is no consent workflow in a Minecraft mod that silently exfiltrates a Microsoft token. A
+vendor writing that sentence for a product whose feature list says "Vicitim's File access" (their
+typo, kept verbatim) is a vendor who understands authorisation and has decided to fake one. That
+paragraph belongs in every report you file.
+
+### Registered OAuth applications
+
+Customers log into the panel with Google or Discord. The login page hands off to Spring Security's
+OAuth2 client, and following the redirect from the operator's own site exposes the applications
+they registered with each platform:
+
+```
+Discord  client_id 1514260224175767732
+         scope identify email
+         redirect_uri https://funrat.mom/login/oauth2/code/discord
+
+Google   client_id 827852235446-sbf6m20mr632rp3f6huhhrlcgda9iq0k.apps.googleusercontent.com
+         project number 827852235446
+         scope openid profile email
+         redirect_uri https://funrat.mom/login/oauth2/code/google
+```
+
+I am publishing these as **application identifiers to report to the platforms**, not as a way to
+identify a person. Discord and Google each hold the registration record, the verification and the
+payment or account history behind those client IDs. That is the route that resolves an identity,
+and it runs through a provider with a legal process. It is not something I can or should do from
+a shell.
+
+It also matters operationally: the panel's customer accounts are keyed to a Google or Discord
+login, so every reseller of this product has a platform-side identity. That is how a multi-tenant
+MaaS gets dismantled, one tenant at a time.
+
+### Deployment activity
+
+The login page carried `last-modified: Fri, 13 Nov 2026 20:10:29 GMT` while I was looking at it,
+about two hours before my requests. The panel is being actively edited, which fits the changelog
+cadence on Telegram.
+
 ## Attribution leads
 
 What I have, ranked by how much I trust it:
