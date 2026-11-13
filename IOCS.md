@@ -33,6 +33,7 @@ tonapi.io/v2/blockchain/accounts/.../methods/getMessage
 tonhubapi.com/api/v2/runGetMethod      used by the stage 2 Discord component
 EQChU6Zxa_y2fKeeCaSDubGcFZizRdRVSArwAh6qJtfe9NKZ    TON contract holding the C2 list
 relay-3f9c71.kartohaantoha36-6a9.workers.dev        live C2 / payload relay
+relay-mirror.kartohaantoha36-6a9.workers.dev        live mirror, same config
 funrat.mom                                          panel, also slot 3 and 9
 funrat.top                                          legacy host, currently NXDOMAIN
 funrat.co                                           base URL for the zip upload, currently NXDOMAIN
@@ -76,6 +77,27 @@ any other path                                     -> 200 {"ok":true,"ignored":t
 ```
 
 The campaign key `30e3267e-d80c-4a8f-84e2-bb475930a37c` returns `premium:false` server side.
+
+## Tenants and exfil delivery
+
+```
+key 5af99dfc-41c6-451e-b4cd-22c99b9a4e9c   the tenant baked into the sample analysed here
+key 30e3267e-d80c-4a8f-84e2-bb475930a37c   the operator's own tenant, prefix-matched in code
+```
+
+Stolen accounts are delivered to a per-tenant **Discord webhook** (`sendEmbed` in
+`ThinReportController`), resolved from the panel settings JSON at `Discord.items[].id == "Webhook"`.
+Dedupe window 90 s, dead webhooks skipped for 10 minutes.
+
+Panel routes confirmed from the backend classes shipped inside the slot 7 payload:
+
+```
+POST /control/keyPress /control/keyRelease /control/mousePress /control/mouseMove /control/mouseRelease
+POST /clipboard/upload /clipboard/set /clipboard/clear
+POST /mic/upload /mic/status    GET /mic/merge /mic/list /mic/listeners
+GET  /update.ps1                PowerShell updater served by the panel
+GET  /monitors /status /settings /version /update
+```
 
 ## On-chain (TON)
 

