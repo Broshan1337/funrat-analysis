@@ -35,7 +35,8 @@ EQChU6Zxa_y2fKeeCaSDubGcFZizRdRVSArwAh6qJtfe9NKZ    TON contract holding the C2 
 relay-3f9c71.kartohaantoha36-6a9.workers.dev        live C2 / payload relay
 funrat.mom                                          panel, also slot 3 and 9
 funrat.top                                          legacy host, currently NXDOMAIN
-funrat.co                                           base URL used for the zip upload
+funrat.co                                           base URL for the zip upload, currently NXDOMAIN
+funrat.mom/auth/login                               operator panel login, target of the 302s
 telemetry-relay.kartohaantoha36-6a9.workers.dev     second worker, crash and status beacons
 ```
 
@@ -61,6 +62,19 @@ wss://funrat.mom/webcam-stream
 ws://5kiwqdzvhip5yjx5u6ms2hsv3yozpslxocjhyf4cyimrg33fcb7devid.onion/webcam-stream
 /screen-stream  /webcam-stream  /mic/*  /run  /monitors  /revoke-status   (websocket paths)
 ```
+
+## Endpoint behaviour (confirmed 2026-11-13, see PROBES.md)
+
+```
+POST /report   -> 200 {"ok":true,"relayed":true,"code":200,"w":"relayed"}   no validation at all
+POST /error    -> 200 {"ok":true,"sent":false,"code":0}
+GET  /report   -> 405 Spring Boot error, internal path is /api/report
+GET  /api/premium-status?id=<any>                  -> 200 {"premium":false}
+GET  /api/ingest | /version | /update              -> 302 to /auth/login
+any other path                                     -> 200 {"ok":true,"ignored":true}  catch-all
+```
+
+The campaign key `30e3267e-d80c-4a8f-84e2-bb475930a37c` returns `premium:false` server side.
 
 ## Discord abuse
 

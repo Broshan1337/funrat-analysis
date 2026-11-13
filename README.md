@@ -217,6 +217,10 @@ resource is missing from both jars, so in practice it only works if the victim a
 
 See [IOCS.md](IOCS.md) for the flat list and [SAMPLES.md](SAMPLES.md) for hashes.
 
+I also poked the endpoints with obviously fake data to confirm they are live. The credential
+endpoint answers `{"ok":true,"relayed":true}` and does not validate anything, and the worker
+returns 200 for paths that do not exist. Details in [PROBES.md](PROBES.md).
+
 The one worth calling out for anyone doing takedown: the C2 list is stored **on chain**. Killing
 the Cloudflare Workers relay does not kill the campaign, because the mod will fall back to the
 TON contract and to `funrat.mom`. The contract has to be flagged too.
@@ -235,6 +239,7 @@ stage2/
   rat/         the slot 7 RAT, screen/webcam/mic/shell
 native/        nyx.bin analysis (the binary itself is not here)
 IOCS.md        indicators
+PROBES.md      what the live endpoints actually return
 SAMPLES.md     hashes and metadata, no binaries
 ```
 
@@ -245,7 +250,9 @@ sharing platform, not from GitHub.
 
 * Static only, so anything that only shows up at runtime (decryption keys negotiated on the wire,
   actual exfil volume) I did not observe.
-* `funrat.top` is dead today; the relay and `funrat.mom` were live when I looked on 2026-11-13.
+* Status as of 2026-11-13: the Workers relay and `funrat.mom` are live and share one backend,
+  `funrat.top` and `funrat.co` do not resolve, and the `telemetry-relay` worker returns Cloudflare
+  403/530. The panel login is at `funrat.mom/auth/login`.
 * `CookiveV2.dll` and `padlock.dll` were only read through headers, imports, exports and strings,
   not disassembled. The injection story for `CookiveV2.dll` is inferred from the loader strings
   and the fact that the DLL has no export table.
