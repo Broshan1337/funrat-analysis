@@ -239,6 +239,7 @@ stage2/
   rat/         the slot 7 RAT, screen/webcam/mic/shell
 native/        nyx.bin analysis (the binary itself is not here)
 ABUSE_REPORTS.md   the abuse reports I sent, ready to copy
+OSINT.md       the operation behind it: product, timeline, wallets, leads
 IOCS.md        indicators
 PROBES.md      what the live endpoints actually return
 SAMPLES.md     hashes and metadata, no binaries
@@ -246,6 +247,28 @@ SAMPLES.md     hashes and metadata, no binaries
 
 No malware binaries in this repo. If you want the samples, get them from a sandbox or a malware
 sharing platform, not from GitHub.
+
+## The operation behind the malware
+
+Short version, full detail in [OSINT.md](OSINT.md).
+
+This is not a lone script kiddie, it is a product. The landing page at `funrat.mom` is public and
+markets "FunRAT, The Ultimate Minecraft RAT", listing session tokens, screenshots, Discord and
+Telegram credentials, webcam and screen streaming, remote mouse and keyboard, Discord mass DM, and
+the **sale of Hypixel and DonutSMP items** from stolen accounts. Freemium: the free tier spams your
+friends as advertising, premium turns the spam off. That is the `isPremium()` gate in the code.
+
+The operator runs a Telegram changelog channel, `@weloverat`, display name **FunServer**, open
+since 2026-02-25, where they announce features in the first person, complain about abuse reports
+("Some idiots sent report to all possible services"), and announce each new domain. Four domains
+since February, all at NameSilo, all on deSEC nameservers, two of them already suspended by the
+registrar.
+
+The strongest lead is inside the binaries: both native DLLs were built from
+`C:\Users\maksv\source\repos\`, so the injector and the lock screen came off one machine. The
+oldest on-chain address in the cluster has been active since December 2025, ten months before the
+current campaign. I did not find a name and I am not going to invent one from a username; that
+part belongs to whoever takes the police report.
 
 ## Notes and limits
 

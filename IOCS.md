@@ -36,6 +36,7 @@ relay-3f9c71.kartohaantoha36-6a9.workers.dev        live C2 / payload relay
 funrat.mom                                          panel, also slot 3 and 9
 funrat.top                                          legacy host, currently NXDOMAIN
 funrat.co                                           base URL for the zip upload, currently NXDOMAIN
+funrat.lol                                          original and Nov 2026 domain, suspended 2026-11-10
 funrat.mom/auth/login                               operator panel login, target of the 302s
 telemetry-relay.kartohaantoha36-6a9.workers.dev     second worker, crash and status beacons
 ```
@@ -75,6 +76,35 @@ any other path                                     -> 200 {"ok":true,"ignored":t
 ```
 
 The campaign key `30e3267e-d80c-4a8f-84e2-bb475930a37c` returns `premium:false` server side.
+
+## On-chain (TON)
+
+```
+EQChU6Zxa_y2fKeeCaSDubGcFZizRdRVSArwAh6qJtfe9NKZ   live config contract, method link
+EQCsNH1LY2PQeqG2HKSk2myObNTgCuREdq1IVvZFL4k_5iia   retired fallback, active since 2026-02-18
+EQBaz-F9o6nHrQ16Z_jTGZShLyRNEMRtS0OWMYs0GNQK_PHA   retired fallback, active since 2026-02-19
+
+admin wallet   0:7fbd655627967cbaa3b4b6137fb264cf1b6d4c37667ad574c143f282f7a402d4
+               EQ-9ZVYnlny6o7S2E3-yZM8bbUw3ZnrVdMFD8oL3pALU   all 158 config writes, since 2026-10-12
+older address  0:412f898b932b4a7489f2aa0f9c6f8ba7902d5f51e215e2faf72c59a37eab431b   since 2025-12-17
+```
+
+## Handles and identities
+
+```
+FunServer            Telegram channel display name
+@weloverat           the operator's changelog channel, created 2026-02-25
+FunMaster            author field in the mod
+kartohaantoha36-6a9  Cloudflare account subdomain used by both Workers
+maksv              Windows account in the DLL PDB paths (CookiveV2, padlock)
+@virusfinder       TikTok account that shared the sample, not the operator
+```
+
+## Targets of the launcher credential theft
+
+Lunar, Feather, Essential (`essential\microsoft_accounts.json`), IAS, Prism, MultiMC, Modrinth,
+CurseForge (`CurseForge.json`, `CurseForge_msa.json`). Telegram sessions (`tdata`,
+`Telegram Desktop`) are also harvested.
 
 ## Discord abuse
 
