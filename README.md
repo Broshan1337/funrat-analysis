@@ -238,6 +238,7 @@ stage2/
   discord_spam/ Discord token stealer and spammer, TorBridge
   rat/         the slot 7 RAT, screen/webcam/mic/shell
 native/        nyx.bin analysis (the binary itself is not here)
+ABUSE_REPORTS.md   the abuse reports I sent, ready to copy
 IOCS.md        indicators
 PROBES.md      what the live endpoints actually return
 SAMPLES.md     hashes and metadata, no binaries
@@ -256,5 +257,6 @@ sharing platform, not from GitHub.
 * `CookiveV2.dll` and `padlock.dll` were only read through headers, imports, exports and strings,
   not disassembled. The injection story for `CookiveV2.dll` is inferred from the loader strings
   and the fact that the DLL has no export table.
-* I reported this to Cloudflare abuse and to the registrar of `funrat.mom`. The TON contract is the
-  part that needs a different kind of report.
+* I filed abuse reports with Cloudflare, the hosting provider, the registrar and the DNS provider.
+  The texts are in [ABUSE_REPORTS.md](ABUSE_REPORTS.md). The TON contract cannot be taken down, only
+  flagged, which is why the campaign survives domain seizures.
